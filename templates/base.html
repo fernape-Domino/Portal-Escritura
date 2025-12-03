@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>{% block title %}Portal de Escritos{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <div class="title-block">
+        <h1><span class="emoji">✍️</span> Portal de Escritos</h1>
+        <p>Un lugar chulo para guardar poemas, cuentos y todo lo que imagine.</p>
+      </div>
+      <div class="badge">Pequeño escritor en acción ✨</div>
+    </header>
+
+    <main class="app-main">
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="app-footer">
+      Los textos se guardan en una base de datos en el servidor.
+    </footer>
+  </div>
+</body>
+</html>

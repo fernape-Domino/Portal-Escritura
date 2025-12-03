@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ config.name }} · Mundo de Ryan</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+  <!-- Quill: editor de texto -->
+  <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+  <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #5c6bc0, #1a237e, #000000);
+      color: #fff;
+    }
+
+    .page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+    }
+
+    .top-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .back-link {
+      text-decoration: none;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.4);
+      color: #fff;
+      font-size: 0.85rem;
+      border: 1px solid rgba(255,255,255,0.3);
+      backdrop-filter: blur(8px);
+    }
+
+    .category-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .category-title-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+    }
+
+    .category-sub {
+      font-size: 0.9rem;
+      color: #e0e7ff;
+      margin-top: 2px;
+    }
+
+    .top-right {
+      font-size: 0.8rem;
+      color: #e0e7ff;
+    }
+
+    .content {
+      flex: 1;
+      padding: 10px 20px 20px;
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 16px;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.1);
+      border-radius: 18px;
+      padding: 14px 16px;
+      box-shadow: 0 14px 36px rgba(0,0,0,0.6);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.2);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 10px;
+    }
+
+    label {
+      font-size: 0.8rem;
+      color: #e0e7ff;
+    }
+
+    input[type="text"] {
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.4);
+      padding: 8px 12px;
+      font-size: 0.9rem;
+      outline: none;
+      width: 100%;
+      background: rgba(255,255,255,0.9);
+      color: #111;
+    }
+
+    input[type="text"]:focus {
+      box-shadow: 0 0 0 2px rgba(244,143,177,0.7);
+      border-color: transparent;
+    }
+
+    /* Editor Quill */
+#editor {
+  background: #fff;
+  color: #111;
+  min-height: 230px;
+}
+
+/* Barra de herramientas de Quill: blanca como el cuadro de texto */
+.ql-toolbar.ql-snow {
+  background: #ffffff;
+  border: 1px solid rgba(0,0,0,0.12);
+  border-radius: 10px 10px 0 0;
+}
+
+/* Contenedor del editor: cuadro blanco debajo */
+.ql-container.ql-snow {
+  border: 1px solid rgba(0,0,0,0.12);
+  border-top: none;
+  border-radius: 0 0 10px 10px;
+}
+
+/* Iconos e ítems de la barra en color oscuro */
+.ql-snow .ql-picker,
+.ql-snow .ql-picker-label,
+.ql-snow .ql-picker-item {
+  color: #333 !important;
+}
+
+.ql-snow .ql-stroke {
+  stroke: #333 !important;
+}
+
+.ql-snow .ql-fill {
+  fill: #333 !important;
+}
+
+.ql-snow .ql-picker-options {
+  background: #ffffff;
+}
+
+
+    .editor-actions {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .btn {
+      border-radius: 999px;
+      border: none;
+      padding: 7px 14px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #ff6f61, #f48fb1);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.6);
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.9);
+      color: #111;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.4);
+      color: #fff;
+    }
+
+    .btn-sm {
+      padding: 4px 10px;
+      font-size: 0.75rem;
+    }
+
+    .story-list {
+      flex: 1;
+      overflow-y: auto;
+      margin-top: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .story-item {
+      background: rgba(0,0,0,0.35);
+      border-radius: 12px;
+      padding: 8px 10px;
+      border: 1px solid transparent;
+    }
+
+    .story-item.active {
+      border-color: #ff6f61;
+      background: rgba(0,0,0,0.55);
+    }
+
+    .story-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .story-meta {
+      font-size: 0.75rem;
+      color: #c5cae9;
+      margin-bottom: 6px;
+    }
+
+    .story-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .empty-state {
+      font-size: 0.85rem;
+      color: #c5cae9;
+      margin-top: 8px;
+    }
+
+    @media (max-width: 880px) {
+      .content {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="top-bar">
+      <div class="top-left">
+        <a href="{{ url_for('home') }}" class="back-link">⬅ Volver al mundo de Ryan</a>
+        <div>
+          <div class="category-title">
+            <div class="category-title-icon">{{ config.icon }}</div>
+            {{ config.name }}
+          </div>
+          <div class="category-sub">{{ config.description }}</div>
+        </div>
+      </div>
+      <div class="top-right">
+        Escribe, guarda, edita y descarga tus textos.
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- Editor -->
+      <div class="card">
+        <form method="POST" class="editor-form">
+          {% if editing %}
+            <input type="hidden" name="id" value="{{ editing.id }}">
+          {% endif %}
+
+          <div class="field-group">
+            <label for="titleInput">Título</label>
+            <input
+              type="text"
+              id="titleInput"
+              name="title"
+              placeholder="Escribe el título aquí"
+              value="{{ editing.title if editing else '' }}"
+            >
+          </div>
+
+          <div class="field-group" style="flex:1;">
+            <label>Texto</label>
+            <!-- Contenedor para Quill -->
+            <div id="editor">
+              {% if editing %}
+                {{ editing.content | safe }}
+              {% endif %}
+            </div>
+            <!-- Campo oculto donde se envía el HTML -->
+            <input type="hidden" name="content" id="hiddenContent">
+          </div>
+
+          <div class="editor-actions">
+            <button class="btn btn-primary" type="submit">💾 Guardar</button>
+            {% if editing %}
+              <a class="btn btn-secondary" href="{{ url_for('download_text', writing_id=editing.id) }}">⬇ Descargar</a>
+            {% endif %}
+          </div>
+        </form>
+      </div>
+
+      <!-- Lista de textos -->
+      <div class="card">
+        <div class="field-group">
+          <label>Mis textos guardados</label>
+        </div>
+
+        <div class="story-list">
+          {% if writings %}
+            {% for w in writings %}
+              <div class="story-item {% if editing and editing.id == w.id %}active{% endif %}">
+                <div class="story-title">{{ w.title }}</div>
+                <div class="story-meta">
+                  Editado: {{ w.updated_at[:10] }}
+                </div>
+                <div class="story-actions">
+                  <a class="btn btn-secondary btn-sm"
+                     href="{{ url_for('category_view', slug=slug, edit_id=w.id) }}">✏️ Editar</a>
+
+                  <a class="btn btn-secondary btn-sm"
+                     href="{{ url_for('download_text', writing_id=w.id) }}">⬇ Descargar</a>
+
+                  <form method="POST"
+                        action="{{ url_for('delete_text', writing_id=w.id) }}"
+                        style="display:inline;">
+                    <input type="hidden" name="slug" value="{{ slug }}">
+                    <button class="btn btn-ghost btn-sm" type="submit"
+                            onclick="return confirm('¿Seguro que quieres borrar este texto?')">🗑 Borrar</button>
+                  </form>
+                </div>
+              </div>
+            {% endfor %}
+          {% else %}
+            <p class="empty-state">
+              Aún no hay textos en esta categoría. Escribe uno nuevo y guárdalo para verlo aquí. 🌟
+            </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Inicializar Quill
+    var quill = new Quill('#editor', {
+      theme: 'snow',
+      placeholder: 'Escribe tu texto mágico aquí...'
+    });
+
+    // Antes de enviar el formulario, copiamos el HTML a hiddenContent
+    document.querySelector('.editor-form').addEventListener('submit', function (e) {
+      var hidden = document.getElementById('hiddenContent');
+      hidden.value = quill.root.innerHTML;
+    });
+  </script>
+</body>
+</html>
