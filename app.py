@@ -14,6 +14,8 @@ import io
 from datetime import datetime
 import re
 import textwrap
+import time
+from functools import wraps
 
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
@@ -21,10 +23,19 @@ from reportlab.pdfgen import canvas
 app = Flask(__name__)
 
 # Clave para manejar la sesión (PIN)
-app.config["SECRET_KEY"] = "cambia-esta-clave-por-una-mas-larga"
+# ✅ Mejor seguridad: se puede configurar por variable de entorno RYAN_SECRET_KEY
+app.config["SECRET_KEY"] = os.environ.get(
+    "RYAN_SECRET_KEY", "cambia-esta-clave-por-una-mas-larga"
+)
 
-# PIN para entrar al mundo de Ryan
-PIN_CODE = "1234"  # <- cámbialo aquí por el que tú quieras
+# ✅ Mejor PIN: configurable sin tocar código
+#    - Local: puedes dejarlo así o cambiarlo aquí
+#    - En Render: puedes definir la variable de entorno RYAN_PORTAL_PIN
+PIN_CODE = os.environ.get("RYAN_PORTAL_PIN", "1234")
+
+# ⏰ Tiempo de inactividad permitido (en segundos)
+#    Por ejemplo, 15 minutos:
+INACTIVITY_TIMEOUT = 15 * 60
 
 DB_PATH = "database.db"
 
@@ -73,15 +84,24 @@ def init_db():
         conn.close()
 
 
-# ----- Decorador para proteger rutas con PIN ----- #
-from functools import wraps
-
-
+# ----- Decorador para proteger rutas con PIN + cierre por inactividad ----- #
 def pin_required(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
+        # Si no está autorizado, mandamos al PIN
         if not session.get("authorized"):
             return redirect(url_for("pin"))
+
+        now = time.time()
+        last_active = session.get("last_active")
+
+        # Si no hay registro de actividad o ya pasó el tiempo, cerrar sesión
+        if not last_active or (now - last_active) > INACTIVITY_TIMEOUT:
+            session.clear()
+            return redirect(url_for("pin", expired=1))
+
+        # Actualizar última actividad
+        session["last_active"] = now
         return f(*args, **kwargs)
 
     return wrapper
@@ -99,13 +119,20 @@ def welcome():
 @app.route("/pin", methods=["GET", "POST"])
 def pin():
     error = None
+
+    # Si viene de una sesión expirada por inactividad
+    if request.args.get("expired"):
+        error = "Tu sesión se cerró por inactividad. Ingresa el PIN de nuevo."
+
     if request.method == "POST":
         entered = request.form.get("pin", "")
         if entered == PIN_CODE:
             session["authorized"] = True
+            session["last_active"] = time.time()
             return redirect(url_for("home"))
         else:
             error = "PIN incorrecto. Inténtalo de nuevo."
+
     return render_template("pin.html", error=error)
 
 
