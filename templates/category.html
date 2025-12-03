@@ -128,45 +128,44 @@
     }
 
     /* Editor Quill */
-#editor {
-  background: #fff;
-  color: #111;
-  min-height: 230px;
-}
+    #editor {
+      background: #fff;
+      color: #111;
+      min-height: 230px;
+    }
 
-/* Barra de herramientas de Quill: blanca como el cuadro de texto */
-.ql-toolbar.ql-snow {
-  background: #ffffff;
-  border: 1px solid rgba(0,0,0,0.12);
-  border-radius: 10px 10px 0 0;
-}
+    /* Barra de herramientas de Quill: blanca como el cuadro de texto */
+    .ql-toolbar.ql-snow {
+      background: #ffffff;
+      border: 1px solid rgba(0,0,0,0.12);
+      border-radius: 10px 10px 0 0;
+    }
 
-/* Contenedor del editor: cuadro blanco debajo */
-.ql-container.ql-snow {
-  border: 1px solid rgba(0,0,0,0.12);
-  border-top: none;
-  border-radius: 0 0 10px 10px;
-}
+    /* Contenedor del editor: cuadro blanco debajo */
+    .ql-container.ql-snow {
+      border: 1px solid rgba(0,0,0,0.12);
+      border-top: none;
+      border-radius: 0 0 10px 10px;
+    }
 
-/* Iconos e ítems de la barra en color oscuro */
-.ql-snow .ql-picker,
-.ql-snow .ql-picker-label,
-.ql-snow .ql-picker-item {
-  color: #333 !important;
-}
+    /* Iconos e ítems de la barra en color oscuro (legibles) */
+    .ql-snow .ql-picker,
+    .ql-snow .ql-picker-label,
+    .ql-snow .ql-picker-item {
+      color: #333 !important;
+    }
 
-.ql-snow .ql-stroke {
-  stroke: #333 !important;
-}
+    .ql-snow .ql-stroke {
+      stroke: #333 !important;
+    }
 
-.ql-snow .ql-fill {
-  fill: #333 !important;
-}
+    .ql-snow .ql-fill {
+      fill: #333 !important;
+    }
 
-.ql-snow .ql-picker-options {
-  background: #ffffff;
-}
-
+    .ql-snow .ql-picker-options {
+      background: #ffffff;
+    }
 
     .editor-actions {
       margin-top: 10px;
@@ -314,7 +313,7 @@
           <div class="editor-actions">
             <button class="btn btn-primary" type="submit">💾 Guardar</button>
             {% if editing %}
-              <a class="btn btn-secondary" href="{{ url_for('download_text', writing_id=editing.id) }}">⬇ Descargar</a>
+              <a class="btn btn-secondary" href="{{ url_for('download_text', writing_id=editing.id) }}">⬇ Descargar PDF</a>
             {% endif %}
           </div>
         </form>
@@ -339,7 +338,7 @@
                      href="{{ url_for('category_view', slug=slug, edit_id=w.id) }}">✏️ Editar</a>
 
                   <a class="btn btn-secondary btn-sm"
-                     href="{{ url_for('download_text', writing_id=w.id) }}">⬇ Descargar</a>
+                     href="{{ url_for('download_text', writing_id=w.id) }}">⬇ PDF</a>
 
                   <form method="POST"
                         action="{{ url_for('delete_text', writing_id=w.id) }}"
@@ -367,6 +366,9 @@
       theme: 'snow',
       placeholder: 'Escribe tu texto mágico aquí...'
     });
+
+    // Activar corrector nativo del navegador en el editor
+    quill.root.setAttribute('spellcheck', 'true');
 
     // Antes de enviar el formulario, copiamos el HTML a hiddenContent
     document.querySelector('.editor-form').addEventListener('submit', function (e) {
